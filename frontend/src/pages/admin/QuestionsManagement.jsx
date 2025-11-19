@@ -15,6 +15,7 @@ const QuestionsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [editingQuestionData, setEditingQuestionData] = useState(null);
   const [formData, setFormData] = useState({
     questionText: '',
     options: [
@@ -34,14 +35,21 @@ const QuestionsManagement = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [examRes, questionsRes] = await Promise.all([
-        examService.getExamById(examId),
-        questionService.getQuestionsByExam(examId),
-      ]);
+      // Fetch exam first. If questions endpoint returns an error (e.g., none exist yet),
+      // allow adding questions by treating missing questions as an empty list.
+      const examRes = await examService.getExamById(examId);
       setExam(examRes.data.data);
-      setQuestions(questionsRes.data.data);
+
+      try {
+        const questionsRes = await questionService.getQuestionsByExam(examId);
+        setQuestions(questionsRes.data.data || []);
+      } catch (qErr) {
+        // If questions endpoint fails (no seeded questions yet), initialize with empty array
+        setQuestions([]);
+      }
     } catch (error) {
-      toast.error('Failed to load data');
+      toast.error('Failed to load exam');
+      // If exam can't be loaded, go back to exams list
       navigate('/admin/exams');
     } finally {
       setLoading(false);
@@ -106,14 +114,56 @@ const QuestionsManagement = () => {
   };
 
   const handleEdit = (question) => {
-    setFormData({
+    // Create a deep copy of options to avoid mutating the original
+    const optionsCopy = question.options.map(opt => ({ 
+      optionLetter: opt.optionLetter, 
+      optionText: opt.optionText 
+    }));
+    
+    setEditingQuestionData({
+      _id: question._id,
       questionText: question.questionText,
-      options: question.options,
+      options: optionsCopy,
       correctAnswer: question.correctAnswer,
       explanation: question.explanation || '',
     });
     setEditingId(question._id);
-    setShowForm(true);
+  };
+
+  const handleInlineOptionChange = (index, value) => {
+    if (!editingQuestionData) return;
+    const newOptions = [...editingQuestionData.options];
+    newOptions[index].optionText = value;
+    setEditingQuestionData({ ...editingQuestionData, options: newOptions });
+  };
+
+  const handleInlineSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingQuestionData) return;
+
+    try {
+      const data = {
+        examId,
+        questionText: editingQuestionData.questionText,
+        options: editingQuestionData.options,
+        correctAnswer: editingQuestionData.correctAnswer,
+        explanation: editingQuestionData.explanation,
+        questionType: 'mcq',
+      };
+
+      await questionService.updateQuestion(editingQuestionData._id, data);
+      toast.success('Question updated successfully');
+      setEditingId(null);
+      setEditingQuestionData(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Operation failed');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditingQuestionData(null);
   };
 
   const handleLogout = async () => {
@@ -130,7 +180,7 @@ const QuestionsManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-900">
       <Navbar
         title={`Questions - ${exam?.title}`}
         user={user}
@@ -175,13 +225,13 @@ const QuestionsManagement = () => {
 
         {/* Form */}
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold mb-4">
+          <div className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
               {editingId ? 'Edit Question' : 'Add New Question'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Question Text
                 </label>
                 <textarea
@@ -191,19 +241,19 @@ const QuestionsManagement = () => {
                   }
                   required
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                   placeholder="Enter question text..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Options
                 </label>
                 <div className="space-y-3">
                   {formData.options.map((option, idx) => (
                     <div key={idx} className="flex gap-2">
-                      <span className="w-12 px-4 py-2 bg-gray-100 rounded-lg flex items-center font-semibold">
+                      <span className="w-12 px-4 py-2 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 rounded-lg flex items-center font-semibold">
                         {option.optionLetter}.
                       </span>
                       <input
@@ -212,7 +262,7 @@ const QuestionsManagement = () => {
                         onChange={(e) => handleOptionChange(idx, e.target.value)}
                         placeholder={`Option ${option.optionLetter}`}
                         required
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                       />
                     </div>
                   ))}
@@ -220,7 +270,7 @@ const QuestionsManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Correct Answer
                 </label>
                 <select
@@ -228,7 +278,7 @@ const QuestionsManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, correctAnswer: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   <option value="A">A</option>
                   <option value="B">B</option>
@@ -238,7 +288,7 @@ const QuestionsManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Explanation (Optional)
                 </label>
                 <textarea
@@ -247,7 +297,7 @@ const QuestionsManagement = () => {
                     setFormData({ ...formData, explanation: e.target.value })
                   }
                   rows={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                   placeholder="Provide explanation for the answer..."
                 />
               </div>
@@ -264,67 +314,175 @@ const QuestionsManagement = () => {
 
         {/* Questions List */}
         {questions.length === 0 ? (
-          <p className="text-center text-gray-600 py-8">No questions found</p>
+          <p className="text-center text-gray-600 dark:text-gray-300 py-8">No questions found</p>
         ) : (
           <div className="space-y-4">
-            {questions.map((question, idx) => (
-              <div
-                key={question._id}
-                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900">
-                    Q{idx + 1}. {question.questionText}
-                  </h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(question)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                      title="Edit"
-                    >
-                      <FiEdit2 />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(question._id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded"
-                      title="Delete"
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </div>
-                </div>
+            {questions.map((question, idx) => {
+              const isEditing = editingId === question._id && editingQuestionData;
 
-                <div className="space-y-2 mb-3">
-                  {question.options?.map((option, optIdx) => (
-                    <div
-                      key={optIdx}
-                      className={`p-3 rounded ${
-                        option.optionLetter === question.correctAnswer
-                          ? 'bg-green-50 border border-green-300'
-                          : 'bg-gray-50 border border-gray-200'
-                      }`}
-                    >
-                      <span className="font-semibold">
-                        {option.optionLetter}.
-                      </span>{' '}
-                      {option.optionText}
-                      {option.optionLetter === question.correctAnswer && (
-                        <span className="ml-2 text-green-600 font-semibold">
-                          ✓ Correct
-                        </span>
+              return (
+                <div
+                  key={question._id}
+                  className="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                >
+                  {isEditing ? (
+                    /* Inline Edit Mode */
+                    <form onSubmit={handleInlineSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Question Text
+                        </label>
+                        <textarea
+                          value={editingQuestionData.questionText}
+                          onChange={(e) =>
+                            setEditingQuestionData({
+                              ...editingQuestionData,
+                              questionText: e.target.value,
+                            })
+                          }
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Options
+                        </label>
+                        <div className="space-y-2">
+                          {editingQuestionData.options?.map((option, optIdx) => (
+                            <div key={optIdx} className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-900 dark:text-gray-100 w-8">
+                                {option.optionLetter}.
+                              </span>
+                              <input
+                                type="text"
+                                value={option.optionText}
+                                onChange={(e) => handleInlineOptionChange(optIdx, e.target.value)}
+                                placeholder={`Option ${option.optionLetter}`}
+                                required
+                                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Correct Answer
+                        </label>
+                        <select
+                          value={editingQuestionData.correctAnswer}
+                          onChange={(e) =>
+                            setEditingQuestionData({
+                              ...editingQuestionData,
+                              correctAnswer: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        >
+                          <option value="A">A</option>
+                          <option value="B">B</option>
+                          <option value="C">C</option>
+                          <option value="D">D</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Explanation (Optional)
+                        </label>
+                        <textarea
+                          value={editingQuestionData.explanation}
+                          onChange={(e) =>
+                            setEditingQuestionData({
+                              ...editingQuestionData,
+                              explanation: e.target.value,
+                            })
+                          }
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          placeholder="Provide explanation for the answer..."
+                        />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* Read-Only View */
+                    <>
+                      <div className="flex items-start justify-between mb-4">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                          Q{idx + 1}. {question.questionText}
+                        </h3>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(question)}
+                            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition"
+                            title="Edit"
+                          >
+                            <FiEdit2 size={20} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(question._id)}
+                            className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition"
+                            title="Delete"
+                          >
+                            <FiTrash2 size={20} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 mb-3">
+                        {question.options?.map((option, optIdx) => (
+                          <div
+                            key={optIdx}
+                            className={`p-3 rounded ${
+                              option.optionLetter === question.correctAnswer
+                                ? 'bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-800'
+                                : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                            }`}
+                          >
+                            <span className="font-semibold">
+                              {option.optionLetter}.
+                            </span>{' '}
+                            <span className="text-gray-900 dark:text-gray-100">{option.optionText}</span>
+                            {option.optionLetter === question.correctAnswer && (
+                              <span className="ml-2 text-green-600 dark:text-green-400 font-semibold">
+                                ✓ Correct
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {question.explanation && (
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded text-sm text-gray-700 dark:text-gray-300">
+                          <span className="font-semibold">Explanation:</span>{' '}
+                          {question.explanation}
+                        </div>
                       )}
-                    </div>
-                  ))}
+                    </>
+                  )}
                 </div>
-
-                {question.explanation && (
-                  <div className="p-3 bg-blue-50 rounded text-sm text-gray-700">
-                    <span className="font-semibold">Explanation:</span>{' '}
-                    {question.explanation}
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
