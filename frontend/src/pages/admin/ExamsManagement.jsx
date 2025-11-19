@@ -239,7 +239,7 @@ const ExamsManagement = () => {
                   placeholder="Description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="number"
@@ -248,7 +248,7 @@ const ExamsManagement = () => {
                   value={formData.duration}
                   onChange={handleInputChange}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="number"
@@ -257,7 +257,7 @@ const ExamsManagement = () => {
                   value={formData.totalMarks}
                   onChange={handleInputChange}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="number"
@@ -266,7 +266,7 @@ const ExamsManagement = () => {
                   value={formData.perQuestionMarks}
                   onChange={handleInputChange}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="number"
@@ -274,7 +274,7 @@ const ExamsManagement = () => {
                   placeholder="Negative Marking"
                   value={formData.negativeMarking}
                   onChange={handleInputChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="number"
@@ -283,7 +283,7 @@ const ExamsManagement = () => {
                   value={formData.totalQuestions}
                   onChange={handleInputChange}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="number"
@@ -291,7 +291,7 @@ const ExamsManagement = () => {
                   placeholder="Passing Marks"
                   value={formData.passingMarks}
                   onChange={handleInputChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="date"
@@ -299,7 +299,7 @@ const ExamsManagement = () => {
                   value={formData.examDate}
                   onChange={handleInputChange}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="time"
@@ -307,7 +307,7 @@ const ExamsManagement = () => {
                   value={formData.startTime}
                   onChange={handleInputChange}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <input
                   type="time"
@@ -315,7 +315,7 @@ const ExamsManagement = () => {
                   value={formData.endTime}
                   onChange={handleInputChange}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
 
