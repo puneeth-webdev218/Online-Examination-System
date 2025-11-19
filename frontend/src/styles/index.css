@@ -74,6 +74,17 @@ html, body, #root {
   border-color: #4b5563 !important; /* gray-700 border */
 }
 
+/* Fix hover states on lists and interactive elements in dark mode */
+.dark label:hover,
+.dark label:active {
+  background-color: rgba(55, 65, 81, 0.4) !important; /* gray-700 with opacity */
+}
+
+.dark input[type="checkbox"]:checked {
+  background-color: #2563eb !important; /* blue-600 */
+  border-color: #2563eb !important;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }
