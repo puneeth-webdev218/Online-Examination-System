@@ -14,7 +14,7 @@ const ExamsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [selectedStudents, setSelectedStudents] = useState([]);
+  // selectedStudents removed from add/edit form; assignment handled from Exams list
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [assigningExamId, setAssigningExamId] = useState(null);
     const [assignmentStudents, setAssignmentStudents] = useState([]);
@@ -97,7 +97,6 @@ const ExamsManagement = () => {
         negativeMarking: parseInt(formData.negativeMarking),
         totalQuestions: parseInt(formData.totalQuestions),
         passingMarks: parseInt(formData.passingMarks),
-        assignedTo: selectedStudents,
       };
 
       if (editingId) {
@@ -121,7 +120,6 @@ const ExamsManagement = () => {
         endTime: '',
         passingMarks: '',
       });
-      setSelectedStudents([]);
       setShowForm(false);
       setEditingId(null);
       fetchExams();
@@ -321,42 +319,7 @@ const ExamsManagement = () => {
                 />
               </div>
 
-              {/* Student Assignment */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Assign to Students
-                </label>
-                <div className="border border-gray-300 rounded-lg p-4 max-h-48 overflow-y-auto">
-                  {students.length === 0 ? (
-                    <p className="text-gray-500">No students available</p>
-                  ) : (
-                    students.map((student) => (
-                      <label
-                        key={student._id}
-                        className="flex items-center gap-2 mb-2 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedStudents.includes(student._id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedStudents([...selectedStudents, student._id]);
-                            } else {
-                              setSelectedStudents(
-                                selectedStudents.filter((id) => id !== student._id)
-                              );
-                            }
-                          }}
-                          className="w-4 h-4"
-                        />
-                        <span className="text-gray-700">
-                          {student.name} ({student.email})
-                        </span>
-                      </label>
-                    ))
-                  )}
-                </div>
-              </div>
+              {/* Student assignment removed from add/edit form — use Assign Students button on exam cards */}
 
               <button
                 type="submit"
