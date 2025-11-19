@@ -345,7 +345,7 @@ const ExamsManagement = () => {
                           students.map((student) => (
                             <label
                               key={student._id}
-                              className="flex items-center gap-2 mb-2 cursor-pointer"
+                              className="flex items-center gap-2 mb-2 cursor-pointer px-2 py-1 rounded dark:hover:bg-gray-700 transition"
                             >
                               <input
                                 type="checkbox"
@@ -359,9 +359,9 @@ const ExamsManagement = () => {
                                     );
                                   }
                                 }}
-                                className="w-4 h-4"
+                                className="w-4 h-4 dark:accent-blue-600"
                               />
-                              <span className="text-gray-700 dark:text-gray-300">
+                              <span className="text-gray-700 dark:text-gray-100">
                                 {student.name} ({student.email})
                               </span>
                             </label>
